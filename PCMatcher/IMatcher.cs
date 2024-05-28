@@ -1,4 +1,4 @@
-﻿namespace PCCS;
+﻿namespace PCMatcher;
 
 public interface IMatcher
 {

@@ -1,7 +1,6 @@
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PCCS;
-using static PCCS.IMatcher;
+using static PCMatcher.IMatcher;
 
 namespace PCMatcher.Tests;
 
