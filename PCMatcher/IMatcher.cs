@@ -26,15 +26,14 @@ public interface IMatcher
     );
 
     static IMatcher Str(string str) => new MatcherImpl(
-        (s, index) => s[index..].StartsWith(str) ? [index + str.Length] : new HashSet<int>()
+        (s, index) => s.AsSpan(index).StartsWith(str) ? [index + str.Length] : new HashSet<int>()
     );
-
-    static IMatcher Strs(string s1, string s2, params string[] strs)
-        => strs.Select(Str).Aggregate(Str(s1).Or(Str(s2)), (acc, m) => acc.Or(m));
-
 
     static IMatcher Lazy(Func<IMatcher> supplier)
         => new MatcherImpl((s, index) => supplier().ParseFunc(s, index));
+
+    static IMatcher Strs(string s1, string s2, params string[] strs)
+        => strs.Select(Str).Aggregate(Str(s1).Or(Str(s2)), (acc, m) => acc.Or(m));
 
     static IMatcher Seq(IMatcher m1, IMatcher m2, params IMatcher[] matchers)
         => matchers.Aggregate(m1.And(m2), (acc, m) => acc.And(m));
@@ -46,11 +45,11 @@ public interface IMatcher
     {
         return new MatcherImpl((s, index) =>
         {
-            var set = new HashSet<int> { index };
-            for (var i = 0; i < minTimes; i++) set = set.SelectMany(idx => ParseFunc(s, idx)).ToHashSet();
-
-            var result = new HashSet<int>(set);
-            var queue = new Queue<int>(set);
+            var ret = new HashSet<int> { index };
+            for (var i = 0; i < minTimes; i++)
+                ret = ret.SelectMany(idx => ParseFunc(s, idx)).ToHashSet();
+            
+            var queue = new Queue<int>(ret);
             var times = minTimes;
             while (queue.Count > 0 && times < maxTimes)
             {
@@ -58,14 +57,14 @@ public interface IMatcher
                 while (cnt-- > 0)
                     foreach (var i in ParseFunc(s, queue.Dequeue()))
                     {
-                        if (!result.Add(i)) continue;
+                        if (!ret.Add(i)) continue;
                         queue.Enqueue(i);
                     }
 
                 times++;
             }
 
-            return result;
+            return ret;
         });
     }
 
@@ -75,10 +74,11 @@ public interface IMatcher
     {
         return new MatcherImpl((s, index) =>
         {
-            var result = new HashSet<int>();
-            foreach (var i in ParseFunc(s, index)) result.UnionWith(rhs.ParseFunc(s, i));
+            var ret = new HashSet<int>();
+            foreach (var i in ParseFunc(s, index))
+                ret.UnionWith(rhs.ParseFunc(s, i));
 
-            return result;
+            return ret;
         });
     }
 
@@ -90,9 +90,9 @@ public interface IMatcher
     {
         return new MatcherImpl((s, index) =>
         {
-            var result = new HashSet<int>(ParseFunc(s, index));
-            result.UnionWith(rhs.ParseFunc(s, index));
-            return result;
+            var ret = new HashSet<int>(ParseFunc(s, index));
+            ret.UnionWith(rhs.ParseFunc(s, index));
+            return ret;
         });
     }
 
@@ -104,19 +104,19 @@ public interface IMatcher
     {
         return new MatcherImpl((s, index) =>
         {
-            var set = new HashSet<int> { index };
-            for (var i = 0; i < minTimes; i++) set = set.SelectMany(idx => ParseFunc(s, idx)).ToHashSet();
+            var ret = new HashSet<int> { index };
+            for (var i = 0; i < minTimes; i++) 
+                ret = ret.SelectMany(idx => ParseFunc(s, idx)).ToHashSet();
 
-            var queue = new Queue<int>(set);
-            var result = new HashSet<int>(set);
+            var queue = new Queue<int>(ret);
             while (queue.Count > 0)
                 foreach (var i in ParseFunc(s, queue.Dequeue()))
                 {
-                    if (!result.Add(i)) continue;
+                    if (!ret.Add(i)) continue;
                     queue.Enqueue(i);
                 }
 
-            return result;
+            return ret;
         });
     }
 
@@ -124,19 +124,19 @@ public interface IMatcher
 
     IMatcher Many1() => Many(1);
 
-    IMatcher FlatMap(Func<string, IMatcher> mapper)
+    IMatcher FlatMap(Func<string, IMatcher> matcher)
     {
         return new MatcherImpl((s, index) =>
         {
-            var result = new HashSet<int>();
+            var ret = new HashSet<int>();
             foreach (var i in ParseFunc(s, index))
             {
                 var matchStr = s.Substring(index, i - index);
-                var next = mapper(matchStr);
-                result.UnionWith(next.ParseFunc(s, i));
+                var next = matcher(matchStr);
+                ret.UnionWith(next.ParseFunc(s, i));
             }
 
-            return result;
+            return ret;
         });
     }
 }
