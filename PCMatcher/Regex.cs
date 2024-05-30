@@ -18,7 +18,7 @@ public class Regex
         var m = ParseTerm(expr, ref index);
         while (index < expr.Length && expr[index] == '|')
         {
-            index++;
+            Next(expr, ref index);
             m = m.Or(ParseTerm(expr, ref index));
         }
 
@@ -28,12 +28,12 @@ public class Regex
     /*
      * term = factor+
      */
-    private static IMatcher ParseTerm(string term, ref int index)
+    private static IMatcher ParseTerm(string expr, ref int index)
     {
-        var m = ParseFactor(term, ref index);
-        while (index < term.Length && term[index] != ')' && term[index] != '|')
+        var m = ParseFactor(expr, ref index);
+        while (index < expr.Length && expr[index] != ')' && expr[index] != '|')
         {
-            m = m.And(ParseFactor(term, ref index));
+            m = m.And(ParseFactor(expr, ref index));
         }
 
         return m;
@@ -42,25 +42,68 @@ public class Regex
     /*
      * factor = elem '*'
      *        | elem '+'
+     *        | elem '?'
+     *        | elem repeat
      *        | elem
      */
-    private static IMatcher ParseFactor(string factor, ref int index)
+    private static IMatcher ParseFactor(string expr, ref int index)
     {
-        var m = ParseElem(factor, ref index);
-        if (index < factor.Length)
+        var m = ParseElem(expr, ref index);
+        if (index < expr.Length)
         {
-            switch (factor[index])
+            switch (expr[index])
             {
                 case '*':
-                    index++;
+                    Next(expr, ref index);
                     return m.Many0();
                 case '+':
-                    index++;
+                    Next(expr, ref index);
                     return m.Many1();
+                case '?':
+                    Next(expr, ref index);
+                    return m.Repeat(0, 1);
+                case '{':
+                    var (num1, num2) = ParseRepeat(expr, ref index);
+                    return num2 == -1 ? m.Repeat(num1) : m.Repeat(num1, num2);
             }
         }
 
         return m;
+    }
+
+    /*
+     * repeat = '{' num1 '}'
+     *        | '{' num1 ',' num2 '}'
+     */
+    private static (int, int) ParseRepeat(string expr, ref int index)
+    {
+        Consume(expr, ref index, '{');
+        var start = index;
+        while ("1234567890".Contains(Peek(expr, index)))
+        {
+            Next(expr, ref index);
+        }
+
+        var num1 = int.Parse(expr.Substring(start, index - start));
+        switch (Peek(expr, index))
+        {
+            case '}':
+                Consume(expr, ref index, '}');
+                return (num1, -1);
+            case ',':
+                Consume(expr, ref index, ',');
+                start = index;
+                while ("1234567890".Contains(Peek(expr, index)))
+                {
+                    Next(expr, ref index);
+                }
+
+                var num2 = int.Parse(expr.Substring(start, index - start));
+                Consume(expr, ref index, '}');
+                return (num1, num2);
+            default:
+                throw new ArgumentException($"unexpected {Peek(expr, index)}");
+        }
     }
 
     /*
@@ -70,31 +113,41 @@ public class Regex
      *      | '\' char
      *      | char
      */
-    private static IMatcher ParseElem(string elem, ref int index)
+    private static IMatcher ParseElem(string expr, ref int index)
     {
-        switch (elem[index])
+        switch (expr[index])
         {
             case '(':
-                index++;
-                var m = ParseExpr(elem, ref index);
-                Consume(elem, ref index, ')');
+                Next(expr, ref index);
+                var m = ParseExpr(expr, ref index);
+                Consume(expr, ref index, ')');
                 return m;
             case '[':
-                index++;
-                m = ParseRange(elem, ref index);
-                Consume(elem, ref index, ']');
+                Next(expr, ref index);
+                m = ParseRange(expr, ref index);
+                Consume(expr, ref index, ']');
                 return m;
             case '.':
-                index++;
+                Next(expr, ref index);
                 return Any;
             case '\\':
-                index++;
-                var ch = Ch(elem[index]);
-                index++;
-                return ch;
+                Next(expr, ref index);
+                switch (Peek(expr, index))
+                {
+                    case 'w':
+                        Next(expr, ref index);
+                        return Range('A', 'Z').Or(Range('a', 'z')).Or(Range('0', '9'));
+                    case 'd':
+                        Next(expr, ref index);
+                        return Range('0', '9');
+                    default:
+                        var escaped = Ch(expr[index]);
+                        Next(expr, ref index);
+                        return escaped;
+                }
             default:
-                ch = Ch(elem[index]);
-                index++;
+                var ch = Ch(expr[index]);
+                Next(expr, ref index);
                 return ch;
         }
     }
@@ -102,12 +155,12 @@ public class Regex
     /*
      * range = rangeItem+
      */
-    private static IMatcher ParseRange(string range, ref int index)
+    private static IMatcher ParseRange(string expr, ref int index)
     {
-        var m = ParseRangeItem(range, ref index);
-        while (index < range.Length && range[index] != ']')
+        var m = ParseRangeItem(expr, ref index);
+        while (index < expr.Length && expr[index] != ']')
         {
-            m = m.Or(ParseRangeItem(range, ref index));
+            m = m.Or(ParseRangeItem(expr, ref index));
         }
 
         return m;
@@ -117,24 +170,49 @@ public class Regex
      * rangeItem = char '-' char
      *           | char
      */
-    private static IMatcher ParseRangeItem(string rangeItem, ref int index)
+    private static IMatcher ParseRangeItem(string expr, ref int index)
     {
-        var ch = rangeItem[index];
-        index++;
-        if (rangeItem[index] == '-')
+        var ch = expr[index];
+        Next(expr, ref index);
+        if (expr[index] == '-')
         {
-            index++;
-            var r = Range(ch, rangeItem[index]);
-            index++;
+            Next(expr, ref index);
+            var r = Range(ch, expr[index]);
+            Next(expr, ref index);
             return r;
         }
 
         return Ch(ch);
     }
 
+    private static char Peek(string expr, int index)
+    {
+        if (index >= expr.Length)
+        {
+            throw new ArgumentException("unexpected EOF");
+        }
+
+        return expr[index];
+    }
+
+    private static void Next(string expr, ref int index)
+    {
+        if (index >= expr.Length)
+        {
+            throw new ArgumentException("unexpected EOF");
+        }
+
+        index++;
+    }
+
     private static void Consume(string expr, ref int index, char expected)
     {
-        if (index >= expr.Length || expr[index] != expected)
+        if (index >= expr.Length)
+        {
+            throw new ArgumentException("unexpected EOF");
+        }
+
+        if (expr[index] != expected)
         {
             throw new ArgumentException($"{expected} expected");
         }
