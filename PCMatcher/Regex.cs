@@ -109,6 +109,7 @@ public class Regex
     /*
      * elem = '(' expr ')'
      *      | '[' range ']'
+     *      | '[' ‘^’ reverseRange ']'
      *      | '.'
      *      | '\' char
      *      | char
@@ -124,7 +125,16 @@ public class Regex
                 return m;
             case '[':
                 Consume(expr, ref index);
-                m = ParseRange(expr, ref index);
+                if (Peek(expr, index) == '^')
+                {
+                    Consume(expr, ref index);
+                    m = ParseRange(expr, ref index, true);
+                }
+                else
+                {
+                    m = ParseRange(expr, ref index, false);
+                }
+
                 Consume(expr, ref index, ']');
                 return m;
             case '.':
@@ -170,12 +180,14 @@ public class Regex
     /*
      * range = rangeItem+
      */
-    private static IMatcher ParseRange(string expr, ref int index)
+    private static IMatcher ParseRange(string expr, ref int index, bool reverse)
     {
-        var m = ParseRangeItem(expr, ref index);
+        var m = ParseRangeItem(expr, ref index, reverse);
         while (index < expr.Length && expr[index] != ']')
         {
-            m = m.Or(ParseRangeItem(expr, ref index));
+            m = reverse
+                ? m.And(ParseRangeItem(expr, ref index, reverse))
+                : m.Or(ParseRangeItem(expr, ref index, reverse));
         }
 
         return m;
@@ -185,19 +197,19 @@ public class Regex
      * rangeItem = char '-' char
      *           | char
      */
-    private static IMatcher ParseRangeItem(string expr, ref int index)
+    private static IMatcher ParseRangeItem(string expr, ref int index, bool reverse)
     {
         var ch = expr[index];
         Consume(expr, ref index);
         if (expr[index] == '-')
         {
             Consume(expr, ref index);
-            var r = Range(ch, expr[index]);
+            var r = reverse ? ReverseRange(ch, expr[index]) : Range(ch, expr[index]);
             Consume(expr, ref index);
             return r;
         }
 
-        return Ch(ch);
+        return reverse ? Not(ch) : Ch(ch);
     }
 
     private static char Peek(string expr, int index)

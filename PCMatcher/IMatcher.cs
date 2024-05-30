@@ -23,6 +23,8 @@ public interface IMatcher
 
     static IMatcher Range(char c1, char c2) => Ch(c => (c - c1) * (c - c2) <= 0);
 
+    static IMatcher ReverseRange(char c1, char c2) => Ch(c => (c - c1) * (c - c2) > 0);
+
     static IMatcher Ch(Predicate<char> predicate) => new MatcherImpl(
         (s, index) => index < s.Length && predicate(s[index]) ? [index + 1] : new HashSet<int>()
     );
@@ -84,7 +86,7 @@ public interface IMatcher
 
     IMatcher Or(IMatcher rhs) => new MatcherImpl((s, index) =>
     {
-        var ret = new HashSet<int>(ParseFunc(s, index));
+        var ret = ParseFunc(s, index);
         ret.UnionWith(rhs.ParseFunc(s, index));
         return ret;
     });
