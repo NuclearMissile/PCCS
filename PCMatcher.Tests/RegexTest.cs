@@ -257,6 +257,20 @@ public class RegexTest
         IsFalse(m.Match("a"));
         IsFalse(m.Match("b"));
         IsFalse(m.Match("aaaa"));
+        
+        m = Regex.Parse("\\S");
+        IsTrue(m.Match("*"));
+        IsTrue(m.Match("a"));
+        IsTrue(m.Match("b"));
+        IsTrue(m.Match("a"));
+        IsFalse(m.Match(" "));
+        
+        m = Regex.Parse("\\s");
+        IsFalse(m.Match("*"));
+        IsFalse(m.Match("a"));
+        IsFalse(m.Match("b"));
+        IsFalse(m.Match("a"));
+        IsTrue(m.Match(" "));
     }
 
     [TestMethod]

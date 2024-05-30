@@ -8,16 +8,18 @@ public interface IMatcher
     }
 
     Func<string, int, ISet<int>> ParseFunc { get; }
-    
-    bool Match(string s) => ParseFunc(s, 0).Any(i => i == s.Length);
+
+    bool Match(string s) => ParseFunc(s, 0).Contains(s.Length);
 
     static IMatcher Any => Ch(c => true);
 
     static IMatcher Ch(char c) => Ch(ch => ch == c);
 
-    static IMatcher Chs(params char[] chs) => Ch(new HashSet<char>(chs).Contains);
+    static IMatcher Chs(params char[] chs) => Ch(chs.Contains);
 
     static IMatcher Not(char c) => Ch(ch => ch != c);
+
+    static IMatcher Nots(params char[] chs) => Ch(c => !chs.Contains(c));
 
     static IMatcher Range(char c1, char c2) => Ch(c => (c - c1) * (c - c2) <= 0);
 

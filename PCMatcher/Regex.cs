@@ -18,7 +18,7 @@ public class Regex
         var m = ParseTerm(expr, ref index);
         while (index < expr.Length && expr[index] == '|')
         {
-            Next(expr, ref index);
+            Consume(expr, ref index);
             m = m.Or(ParseTerm(expr, ref index));
         }
 
@@ -54,13 +54,13 @@ public class Regex
             switch (expr[index])
             {
                 case '*':
-                    Next(expr, ref index);
+                    Consume(expr, ref index);
                     return m.Many0();
                 case '+':
-                    Next(expr, ref index);
+                    Consume(expr, ref index);
                     return m.Many1();
                 case '?':
-                    Next(expr, ref index);
+                    Consume(expr, ref index);
                     return m.Repeat(0, 1);
                 case '{':
                     var (num1, num2) = ParseRepeat(expr, ref index);
@@ -81,7 +81,7 @@ public class Regex
         var start = index;
         while ("1234567890".Contains(Peek(expr, index)))
         {
-            Next(expr, ref index);
+            Consume(expr, ref index);
         }
 
         var num1 = int.Parse(expr.Substring(start, index - start));
@@ -95,7 +95,7 @@ public class Regex
                 start = index;
                 while ("1234567890".Contains(Peek(expr, index)))
                 {
-                    Next(expr, ref index);
+                    Consume(expr, ref index);
                 }
 
                 var num2 = int.Parse(expr.Substring(start, index - start));
@@ -118,36 +118,51 @@ public class Regex
         switch (expr[index])
         {
             case '(':
-                Next(expr, ref index);
+                Consume(expr, ref index);
                 var m = ParseExpr(expr, ref index);
                 Consume(expr, ref index, ')');
                 return m;
             case '[':
-                Next(expr, ref index);
+                Consume(expr, ref index);
                 m = ParseRange(expr, ref index);
                 Consume(expr, ref index, ']');
                 return m;
             case '.':
-                Next(expr, ref index);
+                Consume(expr, ref index);
                 return Any;
             case '\\':
-                Next(expr, ref index);
+                Consume(expr, ref index);
                 switch (Peek(expr, index))
                 {
                     case 'w':
-                        Next(expr, ref index);
+                        Consume(expr, ref index);
                         return Range('A', 'Z').Or(Range('a', 'z')).Or(Range('0', '9'));
                     case 'd':
-                        Next(expr, ref index);
+                        Consume(expr, ref index);
                         return Range('0', '9');
+                    case 's':
+                        Consume(expr, ref index);
+                        return Chs(' ', '\f', '\n', '\r', '\t', '\v');
+                    case 'S':
+                        Consume(expr, ref index);
+                        return Nots(' ', '\f', '\n', '\r', '\t', '\v');
+                    case 'f':
+                        Consume(expr, ref index);
+                        return Ch('\f');
+                    case 'n':
+                        Consume(expr, ref index);
+                        return Ch('\n');
+                    case 'r':
+                        Consume(expr, ref index);
+                        return Ch('\r');
                     default:
                         var escaped = Ch(expr[index]);
-                        Next(expr, ref index);
+                        Consume(expr, ref index);
                         return escaped;
                 }
             default:
                 var ch = Ch(expr[index]);
-                Next(expr, ref index);
+                Consume(expr, ref index);
                 return ch;
         }
     }
@@ -173,12 +188,12 @@ public class Regex
     private static IMatcher ParseRangeItem(string expr, ref int index)
     {
         var ch = expr[index];
-        Next(expr, ref index);
+        Consume(expr, ref index);
         if (expr[index] == '-')
         {
-            Next(expr, ref index);
+            Consume(expr, ref index);
             var r = Range(ch, expr[index]);
-            Next(expr, ref index);
+            Consume(expr, ref index);
             return r;
         }
 
@@ -195,24 +210,14 @@ public class Regex
         return expr[index];
     }
 
-    private static void Next(string expr, ref int index)
+    private static void Consume(string expr, ref int index, char? expected = null)
     {
         if (index >= expr.Length)
         {
             throw new ArgumentException("unexpected EOF");
         }
 
-        index++;
-    }
-
-    private static void Consume(string expr, ref int index, char expected)
-    {
-        if (index >= expr.Length)
-        {
-            throw new ArgumentException("unexpected EOF");
-        }
-
-        if (expr[index] != expected)
+        if (expected != null && expr[index] != expected)
         {
             throw new ArgumentException($"{expected} expected");
         }

@@ -63,6 +63,12 @@ public class IMatcherTest
         IsTrue(m.Match("b"));
         IsFalse(m.Match("a"));
         IsFalse(m.Match("bb"));
+
+        m = Nots('a', 'b');
+        IsFalse(m.Match("a"));
+        IsFalse(m.Match("b"));
+        IsTrue(m.Match("c"));
+        IsFalse(m.Match("ab"));
     }
 
     [TestMethod]
@@ -223,7 +229,7 @@ public class IMatcherTest
         IsTrue(m.Match("d"));
         IsFalse(m.Match("abcd"));
     }
-    
+
     [TestMethod]
     public void TestSeq()
     {
@@ -236,7 +242,7 @@ public class IMatcherTest
         IsFalse(m.Match("dcba"));
         IsFalse(m.Match("abcde"));
     }
-    
+
     [TestMethod]
     public void TestOneOf()
     {
