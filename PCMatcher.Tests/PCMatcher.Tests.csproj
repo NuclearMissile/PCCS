@@ -17,4 +17,51 @@
     <ProjectReference Include="..\PCMatcher\PCMatcher.csproj" />
   </ItemGroup>
   
+  <ItemGroup>
+    <None Remove="resources\regular1.in" />
+    <EmbeddedResource Include="resources\regular1.in" />
+    <None Remove="resources\regular11.out" />
+    <EmbeddedResource Include="resources\regular11.out" />
+    <None Remove="resources\regular11.in" />
+    <EmbeddedResource Include="resources\regular11.in" />
+    <None Remove="resources\regular10.out" />
+    <EmbeddedResource Include="resources\regular10.out" />
+    <None Remove="resources\regular10.in" />
+    <EmbeddedResource Include="resources\regular10.in" />
+    <None Remove="resources\regular9.out" />
+    <EmbeddedResource Include="resources\regular9.out" />
+    <None Remove="resources\regular9.in" />
+    <EmbeddedResource Include="resources\regular9.in" />
+    <None Remove="resources\regular8.out" />
+    <EmbeddedResource Include="resources\regular8.out" />
+    <None Remove="resources\regular8.in" />
+    <EmbeddedResource Include="resources\regular8.in" />
+    <None Remove="resources\regular7.out" />
+    <EmbeddedResource Include="resources\regular7.out" />
+    <None Remove="resources\regular7.in" />
+    <EmbeddedResource Include="resources\regular7.in" />
+    <None Remove="resources\regular6.out" />
+    <EmbeddedResource Include="resources\regular6.out" />
+    <None Remove="resources\regular6.in" />
+    <EmbeddedResource Include="resources\regular6.in" />
+    <None Remove="resources\regular5.out" />
+    <EmbeddedResource Include="resources\regular5.out" />
+    <None Remove="resources\regular5.in" />
+    <EmbeddedResource Include="resources\regular5.in" />
+    <None Remove="resources\regular4.out" />
+    <EmbeddedResource Include="resources\regular4.out" />
+    <None Remove="resources\regular4.in" />
+    <EmbeddedResource Include="resources\regular4.in" />
+    <None Remove="resources\regular3.out" />
+    <EmbeddedResource Include="resources\regular3.out" />
+    <None Remove="resources\regular3.in" />
+    <EmbeddedResource Include="resources\regular3.in" />
+    <None Remove="resources\regular2.out" />
+    <EmbeddedResource Include="resources\regular2.out" />
+    <None Remove="resources\regular2.in" />
+    <EmbeddedResource Include="resources\regular2.in" />
+    <None Remove="resources\regular1.out" />
+    <EmbeddedResource Include="resources\regular1.out" />
+  </ItemGroup>
+
 </Project>

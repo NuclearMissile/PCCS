@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
@@ -47,7 +50,7 @@ public class RegexTest
         IsFalse(m.Match("ab"));
         IsFalse(m.Match("aab"));
         IsFalse(m.Match(" "));
-        
+
         m = Regex.Parse("a+");
         IsFalse(m.Match(""));
         IsTrue(m.Match("a"));
@@ -56,7 +59,7 @@ public class RegexTest
         IsFalse(m.Match("ab"));
         IsFalse(m.Match("aab"));
         IsFalse(m.Match(" "));
-        
+
         m = Regex.Parse("a?");
         IsTrue(m.Match(""));
         IsTrue(m.Match("a"));
@@ -66,7 +69,7 @@ public class RegexTest
         IsFalse(m.Match("aab"));
         IsFalse(m.Match(" "));
     }
-    
+
     [TestMethod]
     public void Test3()
     {
@@ -210,6 +213,12 @@ public class RegexTest
         var m = Regex.Parse(".*.*=.*");
         IsTrue(m.Match("a=bbb"));
         IsTrue(m.Match("aaaaaaa=bbbbbbbbbbbbbbbbbbb"));
+
+        m = Regex.Parse("(.*)ABCD(\\d*)");
+        IsTrue(m.Match("#$%^ABCD1234"));
+        IsTrue(m.Match("#$%^ABCD"));
+        IsTrue(m.Match("ABCD1234"));
+        IsFalse(m.Match("1234ABCD#$%^"));
     }
 
     [TestMethod]
@@ -228,7 +237,7 @@ public class RegexTest
         IsTrue(m.Match("aaa"));
         IsFalse(m.Match("aaaa"));
     }
-    
+
     [TestMethod]
     public void Test10()
     {
@@ -242,5 +251,110 @@ public class RegexTest
         IsTrue(m.Match("A"));
         IsTrue(m.Match("1"));
         IsFalse(m.Match("aaaa"));
+
+        m = Regex.Parse("\\*");
+        IsTrue(m.Match("*"));
+        IsFalse(m.Match("a"));
+        IsFalse(m.Match("b"));
+        IsFalse(m.Match("aaaa"));
+    }
+
+    [TestMethod]
+    public void Test11()
+    {
+        var m = Regex.Parse("[1-3]");
+        IsFalse(m.Match("0"));
+        IsTrue(m.Match("1"));
+        IsTrue(m.Match("2"));
+        IsTrue(m.Match("3"));
+        IsFalse(m.Match("4"));
+
+        m = Regex.Parse("[1-3b-d]");
+        IsFalse(m.Match("0"));
+        IsTrue(m.Match("1"));
+        IsTrue(m.Match("2"));
+        IsTrue(m.Match("3"));
+        IsFalse(m.Match("4"));
+        IsFalse(m.Match("a"));
+        IsTrue(m.Match("b"));
+        IsTrue(m.Match("c"));
+        IsTrue(m.Match("d"));
+        IsFalse(m.Match("e"));
+
+        m = Regex.Parse("[aeiou]");
+        IsTrue(m.Match("a"));
+        IsTrue(m.Match("e"));
+        IsTrue(m.Match("i"));
+        IsTrue(m.Match("o"));
+        IsTrue(m.Match("u"));
+        IsFalse(m.Match("b"));
+    }
+
+    [TestMethod]
+    public void Test12()
+    {
+        var m = Regex.Parse(
+            "[0369]*(([147][0369]*|[258][0369]*[258][0369]*)([147][0369]*[258][0369]*)*([258][0369]*|[147][0369]*[147][0369]*)|[258][0369]*[147][0369]*)*");
+
+        for (var i = 0; i <= 100000; ++i)
+        {
+            if (i % 3 == 0)
+            {
+                IsTrue(m.Match(i.ToString()));
+            }
+            else
+            {
+                IsFalse(m.Match(i.ToString()));
+            }
+        }
+
+        IsTrue(m.Match("1306037620370620974"));
+        IsFalse(m.Match("1306037620370620975"));
+        IsFalse(m.Match("1306037620370620976"));
+        IsTrue(m.Match("1306037620370620977"));
+    }
+
+    [TestMethod]
+    public void Test13()
+    {
+        var m = Regex.Parse("(a*)*");
+        IsTrue(m.Match(new string('a', 5000)));
+        IsFalse(m.Match(new string('a', 5000) + "b"));
+    }
+
+    [TestMethod]
+    public void Test14()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        for (var i = 1; i <= 11; i++)
+        {
+            var fileIn = $"PCMatcher.Tests.resources.regular{i}.in";
+            var fileOut = $"PCMatcher.Tests.resources.regular{i}.out";
+
+            using (Stream streamIn = assembly.GetManifestResourceStream(fileIn)!)
+            using (Stream streamOut = assembly.GetManifestResourceStream(fileOut)!)
+            using (StreamReader readerIn = new StreamReader(streamIn))
+            using (StreamReader readerOut = new StreamReader(streamOut))
+            {
+                while (!readerIn.EndOfStream)
+                {
+                    var expr = readerIn.ReadLine()!;
+                    var str = readerIn.ReadLine()!;
+                    var expected = readerOut.ReadLine();
+                    Console.WriteLine($"expr: {expr}, str: {str}");
+                    Console.WriteLine("====================================");
+
+                    var m = Regex.Parse(expr);
+                    if (expected == "Yes")
+                    {
+                        IsTrue(m.Match(str));
+                    }
+                    else
+                    {
+                        IsFalse(m.Match(str));
+                    }
+                }
+            }
+        }
     }
 }

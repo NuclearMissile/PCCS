@@ -8,7 +8,7 @@ public interface IMatcher
     }
 
     Func<string, int, ISet<int>> ParseFunc { get; }
-
+    
     bool Match(string s) => ParseFunc(s, 0).Any(i => i == s.Length);
 
     static IMatcher Any => Ch(c => true);
@@ -41,102 +41,72 @@ public interface IMatcher
     static IMatcher OneOf(IMatcher m1, IMatcher m2, params IMatcher[] matchers)
         => matchers.Aggregate(m1.Or(m2), (acc, m) => acc.Or(m));
 
-    IMatcher Repeat(int minTimes, int maxTimes)
+    IMatcher Repeat(int minTimes, int maxTimes) => new MatcherImpl((s, index) =>
     {
-        return new MatcherImpl((s, index) =>
+        var ret = new HashSet<int> { index };
+        for (var i = 0; i < minTimes; i++)
+            ret = ret.SelectMany(idx => ParseFunc(s, idx)).ToHashSet();
+
+        var queue = new Queue<int>(ret);
+        var times = minTimes;
+        while (queue.Count > 0 && times < maxTimes)
         {
-            var ret = new HashSet<int> { index };
-            for (var i = 0; i < minTimes; i++)
-                ret = ret.SelectMany(idx => ParseFunc(s, idx)).ToHashSet();
-            
-            var queue = new Queue<int>(ret);
-            var times = minTimes;
-            while (queue.Count > 0 && times < maxTimes)
-            {
-                var cnt = queue.Count;
-                while (cnt-- > 0)
-                    foreach (var i in ParseFunc(s, queue.Dequeue()))
-                    {
-                        if (!ret.Add(i)) continue;
-                        queue.Enqueue(i);
-                    }
-
-                times++;
-            }
-
-            return ret;
-        });
-    }
-
-    IMatcher Repeat(int times) => Repeat(times, times);
-
-    IMatcher And(IMatcher rhs)
-    {
-        return new MatcherImpl((s, index) =>
-        {
-            var ret = new HashSet<int>();
-            foreach (var i in ParseFunc(s, index))
-                ret.UnionWith(rhs.ParseFunc(s, i));
-
-            return ret;
-        });
-    }
-
-    IMatcher And(char c) => And(Ch(c));
-
-    IMatcher And(string s) => And(Str(s));
-
-    IMatcher Or(IMatcher rhs)
-    {
-        return new MatcherImpl((s, index) =>
-        {
-            var ret = new HashSet<int>(ParseFunc(s, index));
-            ret.UnionWith(rhs.ParseFunc(s, index));
-            return ret;
-        });
-    }
-
-    IMatcher Or(char c) => Or(Ch(c));
-
-    IMatcher Or(string s) => Or(Str(s));
-
-    IMatcher Many(int minTimes)
-    {
-        return new MatcherImpl((s, index) =>
-        {
-            var ret = new HashSet<int> { index };
-            for (var i = 0; i < minTimes; i++) 
-                ret = ret.SelectMany(idx => ParseFunc(s, idx)).ToHashSet();
-
-            var queue = new Queue<int>(ret);
-            while (queue.Count > 0)
+            var cnt = queue.Count;
+            while (cnt-- > 0)
                 foreach (var i in ParseFunc(s, queue.Dequeue()))
                 {
                     if (!ret.Add(i)) continue;
                     queue.Enqueue(i);
                 }
 
-            return ret;
-        });
-    }
+            times++;
+        }
 
-    IMatcher Many0() => Many(0);
+        return ret;
+    });
 
-    IMatcher Many1() => Many(1);
+    IMatcher Repeat(int times) => Repeat(times, times);
 
-    IMatcher FlatMap(Func<string, IMatcher> matcher)
+    IMatcher And(IMatcher rhs) => new MatcherImpl((s, index) =>
     {
-        return new MatcherImpl((s, index) =>
-        {
-            var ret = new HashSet<int>();
-            foreach (var i in ParseFunc(s, index))
-            {
-                var matchStr = s.Substring(index, i - index);
-                var next = matcher(matchStr);
-                ret.UnionWith(next.ParseFunc(s, i));
-            }
+        var ret = new HashSet<int>();
+        foreach (var i in ParseFunc(s, index))
+            ret.UnionWith(rhs.ParseFunc(s, i));
 
-            return ret;
-        });
-    }
+        return ret;
+    });
+
+    IMatcher And(char c) => And(Ch(c));
+
+    IMatcher And(string s) => And(Str(s));
+
+    IMatcher Or(IMatcher rhs) => new MatcherImpl((s, index) =>
+    {
+        var ret = new HashSet<int>(ParseFunc(s, index));
+        ret.UnionWith(rhs.ParseFunc(s, index));
+        return ret;
+    });
+
+    IMatcher Or(char c) => Or(Ch(c));
+
+    IMatcher Or(string s) => Or(Str(s));
+
+    IMatcher Many(int minTimes) => Repeat(minTimes, int.MaxValue);
+
+    IMatcher Many0() => Repeat(0, int.MaxValue);
+
+    IMatcher Many1() => Repeat(1, int.MaxValue);
+
+    IMatcher FlatMap(Func<string, IMatcher> matcher) => new MatcherImpl((s, index) =>
+    {
+        var ret = new HashSet<int>();
+        foreach (var i in ParseFunc(s, index))
+        {
+            var matchStr = s.Substring(index, i - index);
+            var next = matcher(matchStr);
+            ret.UnionWith(next.ParseFunc(s, i));
+        }
+
+        return ret;
+    });
 }
