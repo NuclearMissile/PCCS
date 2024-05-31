@@ -57,53 +57,6 @@ public class IMatcherTest
     }
 
     [TestMethod]
-    public void TestReverseRange()
-    {
-        var m = ReverseRange('1', '3');
-        IsTrue(m.Match("a"));
-        IsTrue(m.Match("0"));
-        IsFalse(m.Match("1"));
-        IsFalse(m.Match("2"));
-        IsFalse(m.Match("3"));
-        IsTrue(m.Match("4"));
-        IsTrue(m.Match("A"));
-
-        m = ReverseRange('1', '3').And(ReverseRange('b', 'd'));
-        IsTrue(m.Match("0"));
-        IsFalse(m.Match("1"));
-        IsFalse(m.Match("2"));
-        IsFalse(m.Match("3"));
-        IsTrue(m.Match("4"));
-        IsTrue(m.Match("a"));
-        IsFalse(m.Match("b"));
-        IsFalse(m.Match("c"));
-        IsFalse(m.Match("d"));
-        IsTrue(m.Match("e"));
-    }
-
-    [TestMethod]
-    public void TestNot()
-    {
-        var m = Not('a');
-        IsTrue(m.Match("b"));
-        IsFalse(m.Match("a"));
-        IsFalse(m.Match("bb"));
-
-        m = Nots('a', 'b');
-        IsFalse(m.Match("a"));
-        IsFalse(m.Match("b"));
-        IsTrue(m.Match("c"));
-        IsFalse(m.Match("ab"));
-        
-        m = Nots('a', 'b').And(Not('c'));
-        IsFalse(m.Match("a"));
-        IsFalse(m.Match("b"));
-        IsFalse(m.Match("c"));
-        IsTrue(m.Match("d"));
-        IsFalse(m.Match("ab"));
-    }
-
-    [TestMethod]
     public void TestStr()
     {
         var m = Str("abc");
@@ -225,7 +178,7 @@ public class IMatcherTest
     [TestMethod]
     public void TestFlatMap()
     {
-        var m = Not(' ').Many1().FlatMap(s => Ch(' ').And(Str("xxx")).And(' ').And(Str(s)));
+        var m = Ch('a').Many1().FlatMap(s => Ch(' ').And(Str("xxx")).And(' ').And(Str(s)));
         IsTrue(m.Match("a xxx a"));
         IsFalse(m.Match("a xxx b"));
         IsFalse(m.Match("aa xxx a"));

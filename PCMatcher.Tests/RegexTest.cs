@@ -258,13 +258,6 @@ public class RegexTest
         IsFalse(m.Match("b"));
         IsFalse(m.Match("aaaa"));
         
-        m = Regex.Parse("\\S");
-        IsTrue(m.Match("*"));
-        IsTrue(m.Match("a"));
-        IsTrue(m.Match("b"));
-        IsTrue(m.Match("a"));
-        IsFalse(m.Match(" "));
-        
         m = Regex.Parse("\\s");
         IsFalse(m.Match("*"));
         IsFalse(m.Match("a"));
@@ -282,15 +275,6 @@ public class RegexTest
         IsTrue(m.Match("2"));
         IsTrue(m.Match("3"));
         IsFalse(m.Match("4"));
-        
-        m = Regex.Parse("[^1-3]");
-        IsTrue(m.Match("A"));
-        IsTrue(m.Match("0"));
-        IsFalse(m.Match("1"));
-        IsFalse(m.Match("2"));
-        IsFalse(m.Match("3"));
-        IsTrue(m.Match("4"));
-        IsTrue(m.Match("z"));
 
         m = Regex.Parse("[1-3b-d]");
         IsFalse(m.Match("0"));
@@ -311,18 +295,6 @@ public class RegexTest
         IsTrue(m.Match("3"));
         IsTrue(m.Match("4"));
         IsFalse(m.Match("5"));
-        
-        m = Regex.Parse("[^1-3b-d]");
-        IsTrue(m.Match("0"));
-        IsFalse(m.Match("1"));
-        IsFalse(m.Match("2"));
-        IsFalse(m.Match("3"));
-        IsTrue(m.Match("4"));
-        IsTrue(m.Match("a"));
-        IsFalse(m.Match("b"));
-        IsFalse(m.Match("c"));
-        IsFalse(m.Match("d"));
-        IsTrue(m.Match("e"));
 
         m = Regex.Parse("[aeiou]");
         IsTrue(m.Match("a"));

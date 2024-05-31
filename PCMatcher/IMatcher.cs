@@ -17,13 +17,7 @@ public interface IMatcher
 
     static IMatcher Chs(params char[] chs) => Ch(chs.Contains);
 
-    static IMatcher Not(char c) => Ch(ch => ch != c);
-
-    static IMatcher Nots(params char[] chs) => Ch(c => !chs.Contains(c));
-
     static IMatcher Range(char c1, char c2) => Ch(c => (c - c1) * (c - c2) <= 0);
-
-    static IMatcher ReverseRange(char c1, char c2) => Ch(c => (c - c1) * (c - c2) > 0);
 
     static IMatcher Ch(Predicate<char> predicate) => new MatcherImpl(
         (s, index) => index < s.Length && predicate(s[index]) ? [index + 1] : new HashSet<int>()

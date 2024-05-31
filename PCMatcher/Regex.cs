@@ -109,7 +109,6 @@ public class Regex
     /*
      * elem = '(' expr ')'
      *      | '[' range ']'
-     *      | '[' ‘^’ reverseRange ']'
      *      | '.'
      *      | '\' char
      *      | char
@@ -125,16 +124,7 @@ public class Regex
                 return m;
             case '[':
                 Consume(expr, ref index);
-                if (Peek(expr, index) == '^')
-                {
-                    Consume(expr, ref index);
-                    m = ParseRange(expr, ref index, true);
-                }
-                else
-                {
-                    m = ParseRange(expr, ref index, false);
-                }
-
+                m = ParseRange(expr, ref index);
                 Consume(expr, ref index, ']');
                 return m;
             case '.':
@@ -153,9 +143,6 @@ public class Regex
                     case 's':
                         Consume(expr, ref index);
                         return Chs(' ', '\f', '\n', '\r', '\t', '\v');
-                    case 'S':
-                        Consume(expr, ref index);
-                        return Nots(' ', '\f', '\n', '\r', '\t', '\v');
                     case 'f':
                         Consume(expr, ref index);
                         return Ch('\f');
@@ -180,14 +167,12 @@ public class Regex
     /*
      * range = rangeItem+
      */
-    private static IMatcher ParseRange(string expr, ref int index, bool reverse)
+    private static IMatcher ParseRange(string expr, ref int index)
     {
-        var m = ParseRangeItem(expr, ref index, reverse);
+        var m = ParseRangeItem(expr, ref index);
         while (index < expr.Length && expr[index] != ']')
         {
-            m = reverse
-                ? m.And(ParseRangeItem(expr, ref index, reverse))
-                : m.Or(ParseRangeItem(expr, ref index, reverse));
+            m = m.Or(ParseRangeItem(expr, ref index));
         }
 
         return m;
@@ -197,19 +182,19 @@ public class Regex
      * rangeItem = char '-' char
      *           | char
      */
-    private static IMatcher ParseRangeItem(string expr, ref int index, bool reverse)
+    private static IMatcher ParseRangeItem(string expr, ref int index)
     {
         var ch = expr[index];
         Consume(expr, ref index);
         if (expr[index] == '-')
         {
             Consume(expr, ref index);
-            var r = reverse ? ReverseRange(ch, expr[index]) : Range(ch, expr[index]);
+            var r = Range(ch, expr[index]);
             Consume(expr, ref index);
             return r;
         }
 
-        return reverse ? Not(ch) : Ch(ch);
+        return Ch(ch);
     }
 
     private static char Peek(string expr, int index)
