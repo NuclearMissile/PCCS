@@ -1,13 +1,13 @@
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
-using static PCMatcher.ArithmeticExprValidator;
+using static PCMatcher.ArithmeticExprMatcher;
 
 namespace PCMatcher.Tests;
 
 [TestClass]
-[TestSubject(typeof(ArithmeticExprValidator))]
-public class ArithmeticExprValidatorTest
+[TestSubject(typeof(ArithmeticExprMatcher))]
+public class ArithmeticExprMatcherTest
 {
     [TestMethod]
     public void TestArithmeticExprValidator()

@@ -8,19 +8,19 @@ using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 namespace PCMatcher.Tests;
 
 [TestClass]
-[TestSubject(typeof(Regex))]
-public class RegexTest
+[TestSubject(typeof(RegexMatcher))]
+public class RegexMatcherTest
 {
     [TestMethod]
     public void Test0()
     {
-        var m = Regex.Parse("a");
+        var m = RegexMatcher.Parse("a");
         IsTrue(m.Match("a"));
         IsFalse(m.Match("b"));
         IsFalse(m.Match("aa"));
         IsFalse(m.Match(""));
 
-        m = Regex.Parse("(a)");
+        m = RegexMatcher.Parse("(a)");
         IsTrue(m.Match("a"));
         IsFalse(m.Match("b"));
         IsFalse(m.Match("aa"));
@@ -30,7 +30,7 @@ public class RegexTest
     [TestMethod]
     public void Test1()
     {
-        var m = Regex.Parse(".");
+        var m = RegexMatcher.Parse(".");
         IsTrue(m.Match("a"));
         IsTrue(m.Match("b"));
         IsTrue(m.Match(" "));
@@ -42,7 +42,7 @@ public class RegexTest
     [TestMethod]
     public void Test2()
     {
-        var m = Regex.Parse("a*");
+        var m = RegexMatcher.Parse("a*");
         IsTrue(m.Match(""));
         IsTrue(m.Match("a"));
         IsTrue(m.Match("aa"));
@@ -51,7 +51,7 @@ public class RegexTest
         IsFalse(m.Match("aab"));
         IsFalse(m.Match(" "));
 
-        m = Regex.Parse("a+");
+        m = RegexMatcher.Parse("a+");
         IsFalse(m.Match(""));
         IsTrue(m.Match("a"));
         IsTrue(m.Match("aa"));
@@ -60,7 +60,7 @@ public class RegexTest
         IsFalse(m.Match("aab"));
         IsFalse(m.Match(" "));
 
-        m = Regex.Parse("a?");
+        m = RegexMatcher.Parse("a?");
         IsTrue(m.Match(""));
         IsTrue(m.Match("a"));
         IsFalse(m.Match("aa"));
@@ -73,7 +73,7 @@ public class RegexTest
     [TestMethod]
     public void Test3()
     {
-        var m = Regex.Parse("abc");
+        var m = RegexMatcher.Parse("abc");
         IsFalse(m.Match(""));
         IsFalse(m.Match("ab"));
         IsTrue(m.Match("abc"));
@@ -84,7 +84,7 @@ public class RegexTest
     [TestMethod]
     public void Test4()
     {
-        var m = Regex.Parse("a|b");
+        var m = RegexMatcher.Parse("a|b");
         IsFalse(m.Match(""));
         IsTrue(m.Match("a"));
         IsTrue(m.Match("b"));
@@ -92,7 +92,7 @@ public class RegexTest
         IsFalse(m.Match("abc"));
         IsFalse(m.Match(" "));
 
-        m = Regex.Parse("a|b|cd|efg");
+        m = RegexMatcher.Parse("a|b|cd|efg");
         IsFalse(m.Match(""));
         IsTrue(m.Match("a"));
         IsTrue(m.Match("b"));
@@ -107,7 +107,7 @@ public class RegexTest
     [TestMethod]
     public void Test5()
     {
-        var m = Regex.Parse("(a|b)*");
+        var m = RegexMatcher.Parse("(a|b)*");
         IsTrue(m.Match(""));
         IsTrue(m.Match("a"));
         IsTrue(m.Match("b"));
@@ -116,7 +116,7 @@ public class RegexTest
         IsFalse(m.Match("abc"));
         IsFalse(m.Match(" "));
 
-        m = Regex.Parse("(a|b)+");
+        m = RegexMatcher.Parse("(a|b)+");
         IsFalse(m.Match(""));
         IsTrue(m.Match("a"));
         IsTrue(m.Match("b"));
@@ -125,7 +125,7 @@ public class RegexTest
         IsFalse(m.Match("abc"));
         IsFalse(m.Match(" "));
 
-        m = Regex.Parse("(ab)*");
+        m = RegexMatcher.Parse("(ab)*");
         IsTrue(m.Match(""));
         IsFalse(m.Match("a"));
         IsFalse(m.Match("b"));
@@ -135,7 +135,7 @@ public class RegexTest
         IsFalse(m.Match("abc"));
         IsFalse(m.Match(" "));
 
-        m = Regex.Parse("(a|ab)c");
+        m = RegexMatcher.Parse("(a|ab)c");
         IsFalse(m.Match(""));
         IsFalse(m.Match("a"));
         IsFalse(m.Match("b"));
@@ -145,13 +145,13 @@ public class RegexTest
         IsFalse(m.Match("c"));
         IsFalse(m.Match(" "));
 
-        m = Regex.Parse("(a*)*");
+        m = RegexMatcher.Parse("(a*)*");
         IsTrue(m.Match(""));
         IsTrue(m.Match("a"));
         IsTrue(m.Match("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
         IsFalse(m.Match("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"));
 
-        m = Regex.Parse("(a+)+");
+        m = RegexMatcher.Parse("(a+)+");
         IsFalse(m.Match(""));
         IsTrue(m.Match("a"));
         IsTrue(m.Match("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
@@ -161,7 +161,7 @@ public class RegexTest
     [TestMethod]
     public void Test6()
     {
-        var m = Regex.Parse("(0|1(01*0)*1)*");
+        var m = RegexMatcher.Parse("(0|1(01*0)*1)*");
         IsTrue(m.Match("0"));
         IsFalse(m.Match("1"));
         IsFalse(m.Match("10"));
@@ -184,23 +184,23 @@ public class RegexTest
     [TestMethod]
     public void Test7()
     {
-        var m = Regex.Parse("a*a*a*a*aaaaaaaaaa");
+        var m = RegexMatcher.Parse("a*a*a*a*aaaaaaaaaa");
         IsTrue(m.Match("aaaaaaaaaa"));
         IsFalse(m.Match("aaaaaaaaa"));
 
-        m = Regex.Parse("((a*)*)*");
+        m = RegexMatcher.Parse("((a*)*)*");
         IsTrue(m.Match(
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
         IsFalse(m.Match(
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"));
 
-        m = Regex.Parse("((a+)+)+");
+        m = RegexMatcher.Parse("((a+)+)+");
         IsTrue(m.Match(
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
         IsFalse(m.Match(
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"));
 
-        m = Regex.Parse("a(.+)+a");
+        m = RegexMatcher.Parse("a(.+)+a");
         IsTrue(m.Match(
             "abbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba"));
         IsFalse(m.Match(
@@ -210,11 +210,11 @@ public class RegexTest
     [TestMethod]
     public void Test8()
     {
-        var m = Regex.Parse(".*.*=.*");
+        var m = RegexMatcher.Parse(".*.*=.*");
         IsTrue(m.Match("a=bbb"));
         IsTrue(m.Match("aaaaaaa=bbbbbbbbbbbbbbbbbbb"));
 
-        m = Regex.Parse("(.*)ABCD(\\d*)");
+        m = RegexMatcher.Parse("(.*)ABCD(\\d*)");
         IsTrue(m.Match("#$%^ABCD1234"));
         IsTrue(m.Match("#$%^ABCD"));
         IsTrue(m.Match("ABCD1234"));
@@ -224,13 +224,13 @@ public class RegexTest
     [TestMethod]
     public void Test9()
     {
-        var m = Regex.Parse("a{3}");
+        var m = RegexMatcher.Parse("a{3}");
         IsFalse(m.Match("a"));
         IsFalse(m.Match("aa"));
         IsTrue(m.Match("aaa"));
         IsFalse(m.Match("aaaa"));
 
-        m = Regex.Parse("a{1,3}");
+        m = RegexMatcher.Parse("a{1,3}");
         IsFalse(m.Match(""));
         IsTrue(m.Match("a"));
         IsTrue(m.Match("aa"));
@@ -241,24 +241,24 @@ public class RegexTest
     [TestMethod]
     public void Test10()
     {
-        var m = Regex.Parse("\\d");
+        var m = RegexMatcher.Parse("\\d");
         IsTrue(m.Match("1"));
         IsFalse(m.Match("123"));
         IsFalse(m.Match("a"));
 
-        m = Regex.Parse("\\w");
+        m = RegexMatcher.Parse("\\w");
         IsTrue(m.Match("a"));
         IsTrue(m.Match("A"));
         IsTrue(m.Match("1"));
         IsFalse(m.Match("aaaa"));
 
-        m = Regex.Parse("\\*");
+        m = RegexMatcher.Parse("\\*");
         IsTrue(m.Match("*"));
         IsFalse(m.Match("a"));
         IsFalse(m.Match("b"));
         IsFalse(m.Match("aaaa"));
         
-        m = Regex.Parse("\\s");
+        m = RegexMatcher.Parse("\\s");
         IsFalse(m.Match("*"));
         IsFalse(m.Match("a"));
         IsFalse(m.Match("b"));
@@ -269,14 +269,14 @@ public class RegexTest
     [TestMethod]
     public void Test11()
     {
-        var m = Regex.Parse("[1-3]");
+        var m = RegexMatcher.Parse("[1-3]");
         IsFalse(m.Match("0"));
         IsTrue(m.Match("1"));
         IsTrue(m.Match("2"));
         IsTrue(m.Match("3"));
         IsFalse(m.Match("4"));
 
-        m = Regex.Parse("[1-3b-d]");
+        m = RegexMatcher.Parse("[1-3b-d]");
         IsFalse(m.Match("0"));
         IsTrue(m.Match("1"));
         IsTrue(m.Match("2"));
@@ -288,7 +288,7 @@ public class RegexTest
         IsTrue(m.Match("d"));
         IsFalse(m.Match("e"));
         
-        m = Regex.Parse("[1-32-4]");
+        m = RegexMatcher.Parse("[1-32-4]");
         IsFalse(m.Match("0"));
         IsTrue(m.Match("1"));
         IsTrue(m.Match("2"));
@@ -296,7 +296,7 @@ public class RegexTest
         IsTrue(m.Match("4"));
         IsFalse(m.Match("5"));
 
-        m = Regex.Parse("[aeiou]");
+        m = RegexMatcher.Parse("[aeiou]");
         IsTrue(m.Match("a"));
         IsTrue(m.Match("e"));
         IsTrue(m.Match("i"));
@@ -310,7 +310,7 @@ public class RegexTest
     [TestMethod]
     public void Test12()
     {
-        var m = Regex.Parse(
+        var m = RegexMatcher.Parse(
             "[0369]*(([147][0369]*|[258][0369]*[258][0369]*)([147][0369]*[258][0369]*)*([258][0369]*|[147][0369]*[147][0369]*)|[258][0369]*[147][0369]*)*");
 
         for (var i = 0; i <= 100000; ++i)
@@ -334,7 +334,7 @@ public class RegexTest
     [TestMethod]
     public void Test13()
     {
-        var m = Regex.Parse("(a*)*");
+        var m = RegexMatcher.Parse("(a*)*");
         IsTrue(m.Match(new string('a', 5000)));
         IsFalse(m.Match(new string('a', 5000) + "b"));
     }
@@ -361,7 +361,7 @@ public class RegexTest
                     Console.WriteLine($"expr: {expr}, str: {str}");
                     Console.WriteLine("====================================");
 
-                    var m = Regex.Parse(expr);
+                    var m = RegexMatcher.Parse(expr);
                     if (expected == "Yes")
                     {
                         IsTrue(m.Match(str));

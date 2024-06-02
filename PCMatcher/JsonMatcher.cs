@@ -13,7 +13,7 @@ namespace PCMatcher;
  * field = string : json
  * obj = "{}" | '{' field (',' field)* '}'
  */
-public static class JsonValidator
+public static class JsonMatcher
 {
     private static readonly IMatcher Blank = Chs(' ', '\t', '\n', '\r').Many0();
 

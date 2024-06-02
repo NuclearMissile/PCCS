@@ -7,7 +7,7 @@ namespace PCMatcher;
  * term = ()
  *      | '(' expr ')'
  */
-public class BracketValidator
+public class BracketMatcher
 {
     private static readonly IMatcher Term = OneOf(Str("()"), Seq(Ch('('), Lazy(() => Expr), Ch(')')));
 

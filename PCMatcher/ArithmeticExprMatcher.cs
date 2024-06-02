@@ -9,7 +9,7 @@ namespace PCMatcher;
  *        | '-' factor
  *        | '(' expr ')'
  */
-public class ArithmeticExprValidator
+public class ArithmeticExprMatcher
 {
     private static readonly IMatcher Factor = OneOf(
         Range('0', '9').Many1(),

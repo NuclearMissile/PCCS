@@ -2,7 +2,7 @@ namespace PCMatcher;
 
 using static IMatcher;
 
-public class Regex
+public class RegexMatcher
 {
     public static IMatcher Parse(string expr)
     {

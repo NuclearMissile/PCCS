@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NaiveParser\NaiveParser.csproj" />
     <ProjectReference Include="..\PCMatcher\PCMatcher.csproj" />
   </ItemGroup>
   

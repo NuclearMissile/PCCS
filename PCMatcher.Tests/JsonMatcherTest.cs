@@ -2,13 +2,13 @@ using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 using PCMatcher;
-using static PCMatcher.JsonValidator;
+using static PCMatcher.JsonMatcher;
 
 namespace PCMatcher.Tests;
 
 [TestClass]
-[TestSubject(typeof(JsonValidator))]
-public class JsonValidatorTest
+[TestSubject(typeof(JsonMatcher))]
+public class JsonMatcherTest
 {
     private const string JSON = """
                                 {
