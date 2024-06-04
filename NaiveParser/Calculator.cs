@@ -5,8 +5,8 @@ namespace NaiveParser;
 
 public class Calculator
 {
-    private string input = "";
-    private int pos = 0;
+    private string _input = "";
+    private int _pos = 0;
     private IDictionary<string, double> consts = new Dictionary<string, double>();
 
     private IDictionary<string, Func<IList<double>, double>> funcs =
@@ -26,17 +26,17 @@ public class Calculator
 
     public double Calculate(string expr)
     {
-        input = expr;
-        pos = 0;
+        _input = expr;
+        _pos = 0;
         var ret = Parse0();
-        return pos == input.Length ? ret : throw new ArgumentException($"unexpected character: {Peek()}");
+        return _pos == _input.Length ? ret : throw new ArgumentException($"unexpected character: {Peek()}");
     }
 
-    private char? Peek() => pos >= input.Length ? null : input[pos];
+    private char? Peek() => _pos >= _input.Length ? null : _input[_pos];
 
     private char? Next()
     {
-        pos++;
+        _pos++;
         return Peek();
     }
 
@@ -121,13 +121,13 @@ public class Calculator
 
     private double ParseFuncOrConst()
     {
-        var start = pos;
+        var start = _pos;
         while (IsLetterOrDigit(Peek() ?? '$'))
         {
             Next();
         }
 
-        var name = input.Substring(start, pos - start);
+        var name = _input.Substring(start, _pos - start);
 
         if (Match('('))
         {
@@ -166,12 +166,12 @@ public class Calculator
 
     private double ParseNumber()
     {
-        var start = pos;
+        var start = _pos;
         while (IsDigit(Peek() ?? '$') || Peek() == '.')
         {
             Next();
         }
 
-        return double.Parse(input.Substring(start, pos - start));
+        return double.Parse(_input.Substring(start, _pos - start));
     }
 }
