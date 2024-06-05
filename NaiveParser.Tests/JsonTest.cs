@@ -24,11 +24,11 @@ public class JsonTest
                            "zip": "10001"
                        },
                        "languages": ["English", "Spanish", "French"],
-                       "contact": null
+                       "contact": null,
+                       "escape": "\u1234"
                    }
                    """;
         var obj = new Json().Parse(json);
         Console.WriteLine(Json.ToJson(obj));
-        
     }
 }

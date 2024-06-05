@@ -142,7 +142,7 @@ public class Json
                         break;
                     case 'u':
                         var unicode = string.Join("", Enumerable.Repeat(0, 4).Select(_ => Next()));
-                        sb.Append(int.Parse(unicode, NumberStyles.HexNumber));
+                        sb.Append((char) Convert.ToUInt16(unicode, 16));
                         break;
                     default:
                         throw new ArgumentException($"Invalid escape character: {escaped}");
