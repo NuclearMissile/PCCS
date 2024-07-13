@@ -6,21 +6,21 @@ namespace NaiveParser;
 public class Calculator
 {
     private string _input = "";
-    private int _pos = 0;
-    private IDictionary<string, double> consts = new Dictionary<string, double>();
+    private int _pos;
+    private readonly IDictionary<string, double> _consts = new Dictionary<string, double>();
 
-    private IDictionary<string, Func<IList<double>, double>> funcs =
+    private readonly IDictionary<string, Func<IList<double>, double>> _funcs =
         new Dictionary<string, Func<IList<double>, double>>();
 
     public Calculator RegisterConstant(string name, double value)
     {
-        consts[name] = value;
+        _consts[name] = value;
         return this;
     }
 
     public Calculator RegisterFunc(string name, Func<IList<double>, double> func)
     {
-        funcs[name] = func;
+        _funcs[name] = func;
         return this;
     }
 
@@ -144,7 +144,7 @@ public class Calculator
 
             try
             {
-                return funcs[name](args);
+                return _funcs[name](args);
             }
             catch (KeyNotFoundException)
             {
@@ -155,7 +155,7 @@ public class Calculator
         {
             try
             {
-                return consts[name];
+                return _consts[name];
             }
             catch (KeyNotFoundException)
             {

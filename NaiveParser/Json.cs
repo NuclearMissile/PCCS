@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using static System.Char;
 
@@ -34,7 +33,7 @@ public class Json
     }
 
     private string _input = "";
-    private int _pos = 0;
+    private int _pos;
 
     public object? Parse(string json)
     {
